@@ -1,7 +1,7 @@
 /*
  * week4_1_dynamic_array.c
- * Author: [Your Name]
- * Student ID: [Your ID]
+ * Author: Serhii Voitov
+ * Student ID: 251ADC006
  * Description:
  *   Demonstrates creation and usage of a dynamic array using malloc.
  *   Allocate memory for n integers, read them from the user,
@@ -14,35 +14,59 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-int main(void) {
-    int n;
-    int *arr = NULL;
+static int fill_numbers(int *buf, int count)
+{
+    int *p = buf;
+    int *stop = buf + count;
+
+    while (p < stop) {
+        if (scanf("%d", p) != 1)
+            return 0;
+        p++;
+    }
+    return 1;
+}
+
+static long total_of(const int *buf, int count)
+{
+    long acc = 0;
+    while (count-- > 0)
+        acc += *buf++;
+    return acc;
+}
+
+int main(void)
+{
+    int count;
+    int *numbers;
+    int status = 0;
 
     printf("Enter number of elements: ");
-    if (scanf("%d", &n) != 1 || n <= 0) {
-        printf("Invalid size.\n");
+    if (scanf("%d", &count) != 1 || count <= 0) {
+        puts("Invalid size.");
         return 1;
     }
 
-    // TODO: Allocate memory for n integers using malloc
-    // Example: arr = malloc(n * sizeof(int));
+    numbers = (int *)malloc(sizeof(int) * (size_t)count);
+    if (!numbers) {
+        puts("Memory allocation failed.");
+        return 1;
+    }
 
-    // TODO: Check allocation success
-    // If arr is NULL: print "Memory allocation failed." and return 1
+    printf("Enter %d integers: ", count);
+    if (!fill_numbers(numbers, count)) {
+        puts("Invalid input.");
+        status = 1;
+        goto cleanup;
+    }
 
-    // TODO: Print the prompt "Enter %d integers: " (with n), then read
-    //       n integers into the array.
-    //       If a value cannot be read: print "Invalid input.",
-    //       free the array and return 1
+    {
+        long total = total_of(numbers, count);
+        printf("Sum = %ld\n", total);
+        printf("Average = %.2f\n", total / (double)count);
+    }
 
-    // TODO: Compute the sum and the average (use floating point for the average)
-
-    // TODO: Print the results exactly as:
-    //       Sum = <sum>
-    //       Average = <average with 2 decimals, %.2f>
-
-    // TODO: Free allocated memory
-    (void)arr;  // remove this line once you use arr
-
-    return 0;
+cleanup:
+    free(numbers);
+    return status;
 }

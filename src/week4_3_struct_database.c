@@ -1,7 +1,7 @@
 /*
  * week4_3_struct_database.c
- * Author: [Your Name]
- * Student ID: [Your ID]
+ * Author: Serhii Voitov
+ * Student ID: 251ADC006
  * Description:
  *   Simple in-memory "database" using an array of structs.
  *   Use malloc to allocate space for n Student records,
@@ -16,41 +16,60 @@
 #include <stdlib.h>
 #include <string.h>
 
-// TODO: Define struct Student with fields name (char[50]), id (int), grade (float)
-//       (same definition as in Task 2)
+struct Student {
+    char name[50];
+    int id;
+    float grade;
+};
 
-int main(void) {
-    int n;
-    struct Student *students = NULL;
+static int read_record(struct Student *rec, int number)
+{
+    printf("Enter data for student %d: ", number);
+    return scanf("%49s %d %f", rec->name, &rec->id, &rec->grade) == 3;
+}
+
+static void print_table(const struct Student *table, int size)
+{
+    const struct Student *row = table;
+
+    printf("\n%-6s %-11s %s\n", "ID", "Name", "Grade");
+    while (row < table + size) {
+        printf("%-6d %-11s %.1f\n", row->id, row->name, row->grade);
+        row++;
+    }
+}
+
+int main(void)
+{
+    int size;
+    int k = 0;
+    int rc = 0;
+    struct Student *table;
 
     printf("Enter number of students: ");
-    if (scanf("%d", &n) != 1 || n <= 0) {
-        printf("Invalid number.\n");
+    if (scanf("%d", &size) != 1 || size <= 0) {
+        puts("Invalid number.");
         return 1;
     }
 
-    // TODO: Allocate memory for n Student structs using malloc
-    //       Example: students = malloc(n * sizeof(struct Student));
+    table = malloc(size * sizeof(struct Student));
+    if (table == NULL) {
+        puts("Memory allocation failed.");
+        return 1;
+    }
 
-    // TODO: Check allocation success
-    // If students is NULL: print "Memory allocation failed." and return 1
+    while (k < size) {
+        if (!read_record(table + k, k + 1)) {
+            puts("Invalid input.");
+            rc = 1;
+            break;
+        }
+        k++;
+    }
 
-    // TODO: Read student data in a loop. For student i (counting from 1):
-    //       print "Enter data for student %d: ", then read
-    //       name (scanf("%49s", ...)), id and grade.
-    //       If a value cannot be read: print "Invalid input.",
-    //       free the array and return 1
+    if (rc == 0)
+        print_table(table, size);
 
-    // TODO: Print an empty line, then the table:
-    //       printf("%-6s %-11s %s\n", "ID", "Name", "Grade");
-    //       and for each student:
-    //       printf("%-6d %-11s %.1f\n", id, name, grade);
-
-    // Optional (not autograded): after the table, print the average
-    // grade or the top student
-
-    // TODO: Free allocated memory
-    (void)students;  // remove this line once you use students
-
-    return 0;
+    free(table);
+    return rc;
 }
