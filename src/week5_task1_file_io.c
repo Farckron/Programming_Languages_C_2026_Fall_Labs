@@ -1,5 +1,5 @@
 // week5_task1_file_io.c
-// Name: ________  Surname: ________  Student ID: ________
+// Name: Serhii  Surname: Voitov  Student ID: 251ADC006
 //
 // Task 1: Read and write data from text files
 // Week 5 – Files & Modular Programming
@@ -13,28 +13,59 @@
 #define DEFAULT_FILENAME "data.txt"
 #define LINE_LEN 256
 
-int main(int argc, char *argv[]) {
-    FILE *fp = NULL;
-    const char *filename = DEFAULT_FILENAME;
-    char line[LINE_LEN];
-    int line_count = 0;
+static const char *const greeting[] = {
+    "Hello, file I/O in C!",
+    "This is another line.",
+};
+#define GREETING_LINES ((int)(sizeof greeting / sizeof greeting[0]))
 
-    // BONUS: if a file name was given on the command line (argc > 1), use argv[1] instead.
+static int write_greeting(const char *path)
+{
+    FILE *out = fopen(path, "w");
+    int i;
 
-    // TODO: 1. Print "Writing lines to <filename>..." and open the file for writing (mode "w")
-    // TODO: 2. Check that fp is not NULL. If it is: perror(filename); return EXIT_FAILURE;
-    // TODO: 3. Write 2–3 lines of text to the file using fprintf()
-    // TODO: 4. Close the file with fclose()
+    if (!out)
+        return -1;
+    for (i = 0; i < GREETING_LINES; i++)
+        fprintf(out, "%s\n", greeting[i]);
+    fclose(out);
+    return 0;
+}
 
-    // TODO: 5. Open the file again for reading (mode "r") and check for NULL again
-    // TODO: 6. Print "Reading contents:" and use fgets() in a loop to print each line
-    //          (BONUS: count the lines in line_count)
-    // TODO: 7. Close the file
+static int echo_file(const char *path)
+{
+    char buf[LINE_LEN];
+    int seen = 0;
+    FILE *in = fopen(path, "r");
 
-    // BONUS: printf("Lines read: %d\n", line_count);
+    if (!in)
+        return -1;
+    puts("Reading contents:");
+    while (fgets(buf, LINE_LEN, in)) {
+        fputs(buf, stdout);
+        ++seen;
+    }
+    fclose(in);
+    return seen;
+}
 
-    // Remove this line once you use these variables:
-    (void)argc; (void)argv; (void)fp; (void)filename; (void)line; (void)line_count;
+int main(int argc, char *argv[])
+{
+    const char *path = (argc > 1) ? argv[1] : DEFAULT_FILENAME;
+    int lines;
 
+    printf("Writing lines to %s...\n", path);
+    if (write_greeting(path) != 0) {
+        perror(path);
+        return EXIT_FAILURE;
+    }
+
+    lines = echo_file(path);
+    if (lines < 0) {
+        perror(path);
+        return EXIT_FAILURE;
+    }
+
+    printf("Lines read: %d\n", lines);
     return EXIT_SUCCESS;
 }

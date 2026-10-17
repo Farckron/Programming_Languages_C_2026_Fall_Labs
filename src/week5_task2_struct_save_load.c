@@ -1,5 +1,5 @@
 // week5_task2_struct_save_load.c
-// Name: ________  Surname: ________  Student ID: ________
+// Name: Serhii  Surname: Voitov  Student ID: 251ADC006
 //
 // Task 2: Save and load structured records from a file
 // Week 5 – Files & Modular Programming
@@ -19,45 +19,56 @@ typedef struct Student {
     float gpa;
 } Student;
 
-// Function prototypes (do not change these signatures – the autograder calls them directly)
-int save_student(const Student *s, const char *filename);  // 0 on success, -1 on error
-int load_student(const char *filename, Student *out);      // 0 on success, -1 on error
+int save_student(const Student *s, const char *filename);
+int load_student(const char *filename, Student *out);
 
-int main(void) {
-    Student s1 = {0};
-    strcpy(s1.name, "Alice");
-    s1.age = 21;
-    s1.gpa = 3.75f;
+int save_student(const Student *s, const char *filename)
+{
+    FILE *f;
+    int ok;
 
-    Student loaded = {0};
-    const char *filename = "student.txt";
+    if ((f = fopen(filename, "w")) == NULL)
+        return -1;
+    ok = fprintf(f, "%s %d %.2f\n", s->name, s->age, s->gpa) > 0;
+    if (fclose(f) != 0)
+        ok = 0;
+    return ok ? 0 : -1;
+}
 
-    printf("Saving student to file...\n");
-    // TODO: Call save_student(&s1, filename). If it fails, print an error and return EXIT_FAILURE.
+int load_student(const char *filename, Student *out)
+{
+    FILE *f;
+    int n;
 
-    printf("Loading student from file...\n");
-    // TODO: Call load_student(filename, &loaded). If it fails, print an error and return EXIT_FAILURE.
+    if ((f = fopen(filename, "r")) == NULL)
+        return -1;
+    n = fscanf(f, "%49s %d %f", out->name, &out->age, &out->gpa);
+    fclose(f);
+    return (n == 3) ? 0 : -1;
+}
 
-    // TODO: Print the loaded data in exactly this format:
-    //       printf("Loaded student: %s, %d, GPA %.2f\n", ...);
+int main(void)
+{
+    const char *path = "student.txt";
+    Student original = {0};
+    Student copy = {0};
 
-    (void)filename; (void)loaded;  // remove this line once you use these variables
+    strcpy(original.name, "Alice");
+    original.age = 21;
+    original.gpa = 3.75f;
+
+    puts("Saving student to file...");
+    if (save_student(&original, path) == -1) {
+        perror(path);
+        return EXIT_FAILURE;
+    }
+
+    puts("Loading student from file...");
+    if (load_student(path, &copy) == -1) {
+        fprintf(stderr, "%s: could not read a valid record\n", path);
+        return EXIT_FAILURE;
+    }
+
+    printf("Loaded student: %s, %d, GPA %.2f\n", copy.name, copy.age, copy.gpa);
     return EXIT_SUCCESS;
-}
-
-// TODO: Implement save_student()
-// Open the file for writing ("w"), return -1 if fopen() fails,
-// write "name age gpa" on one line with fprintf(), close the file and return 0.
-int save_student(const Student *s, const char *filename) {
-    (void)s; (void)filename;  // remove this line when you implement the function
-    return -1;
-}
-
-// TODO: Implement load_student()
-// Open the file for reading ("r"), return -1 if fopen() fails,
-// read the three fields with fscanf(fp, "%49s %d %f", ...) and check that it returned 3,
-// close the file in every case, and return 0 on success / -1 on failure.
-int load_student(const char *filename, Student *out) {
-    (void)filename; (void)out;  // remove this line when you implement the function
-    return -1;
 }
